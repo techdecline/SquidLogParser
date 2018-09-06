@@ -121,7 +121,12 @@ function Resolve-SLPType {
     )
 
     $Type = ($line -split "\s+")[9]
-    return $Type
+    if ($Type -ne "-") {
+        return $Type
+    }
+    else {
+        return $null
+    }
 }
 #endregion
 
@@ -232,7 +237,7 @@ function Resolve-SLPLogItem {
                     $returnObj.User = Resolve-SLPUser -Line $LogFileLine
                 }
                 "HierarchyCode" {
-                    $returnObj.User = Resolve-SLPHierarchyCode -Line $LogFileLine
+                    $returnObj.HierarchyCode = Resolve-SLPHierarchyCode -Line $LogFileLine
                 }
                 "Type" {
                     $returnObj.Type = Resolve-SLPType -Line $LogFileLine

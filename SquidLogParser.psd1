@@ -21,10 +21,10 @@ ModuleVersion = '0.1.0'
 GUID = 'ca41a723-03a4-48b3-826c-8044403d273c'
 
 # Autor dieses Moduls
-Author = 'schuchardt'
+Author = 'Cornelius Schuchardt'
 
 # Unternehmen oder Hersteller dieses Moduls
-CompanyName = 'Unbekannt'
+CompanyName = 'SoftEd Systems GmbH'
 
 # Urheberrechtserklärung für dieses Modul
 Copyright = '(c) 2018 schuchardt. Alle Rechte vorbehalten.'

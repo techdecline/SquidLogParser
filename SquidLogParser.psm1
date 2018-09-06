@@ -7,6 +7,10 @@ function Resolve-SLPTargetUrl {
         [String]$Line
     )
 
+    # Define Regular Expressions for internet ressources
+    [regex]$regexHttp = "http.*"
+    [regex]$regexPort = " .*:[0-9]{2,5}"
+
     $match = ($regexHttp.Matches($line)).Value
     $url = ($match -split " ")[0]
     if (-not $url) {
@@ -109,6 +113,7 @@ function Resolve-SLPLogItem {
                 # Other properties not yet implemented
             }
         }
+        return $returnObj
     }
 }
 #endregion

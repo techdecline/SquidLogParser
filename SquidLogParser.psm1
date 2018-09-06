@@ -1,7 +1,30 @@
+enum PropertyList {
+    DateTime
+    Duration
+    ClientAddress
+    ReturnCode
+    SizeBytes
+    RequestMode
+    TargetUrl
+    User
+    HierarchyCode
+    Type
+}
 # Implement your module commands in this script.
 
-
 #region HelperFunctions
+Function Convert-FromUnixDate ($UnixDate) {
+    [timezone]::CurrentTimeZone.ToLocalTime(([datetime]'1/1/1970').AddSeconds($UnixDate))
+ }
+
+function Resolve-SLPDateTime {
+    param ($Line)
+
+    $str = ($Line -split "\s+")[0]
+    $arr = $str -split "\."
+    [DateTime]$time = (Convert-FromUnixDate $arr[0]).addmilliseconds($arr[1])
+    return $time
+}
 function Resolve-SLPTargetUrl {
     param (
         [String]$Line
@@ -24,12 +47,81 @@ function Resolve-SLPTargetUrl {
         return $null
     }
 }
-function Resolve-SLPSourceIp {
+
+function Resolve-SLPClientAddress {
     param (
         [String]$Line
     )
 
-    return "Not yet implemented"
+    $ipAddress = ($line -split "\s+")[2]
+    return $ipAddress
+}
+
+function Resolve-SLPDuration {
+    param (
+        [String]$Line
+    )
+
+    $Duration = ($line -split "\s+")[1]
+    return $Duration
+}
+
+function Resolve-SLPReturnCode {
+    param (
+        [String]$Line
+    )
+
+    $Duration = ($line -split "\s+")[3]
+    return $Duration
+}
+
+function Resolve-SLPSizeBytes {
+    param (
+        [String]$Line
+    )
+
+    $SizeBytes = ($line -split "\s+")[4]
+    return $SizeBytes
+}
+
+function Resolve-SLPRequestMode {
+    param (
+        [String]$Line
+    )
+
+    $RequestMode = ($line -split "\s+")[5]
+    return $RequestMode
+}
+
+function Resolve-SLPUser  {
+    param (
+        [String]$Line
+    )
+
+    $User = ($line -split "\s+")[7]
+    if ($User -ne "-") {
+        return $User
+    }
+    else {
+        return $null
+    }
+}
+
+function Resolve-SLPHierarchyCode {
+    param (
+        [String]$Line
+    )
+
+    $HierarchyCode = ($line -split "\s+")[8]
+    return $HierarchyCode
+}
+function Resolve-SLPType {
+    param (
+        [String]$Line
+    )
+
+    $Type = ($line -split "\s+")[9]
+    return $Type
 }
 #endregion
 
@@ -88,34 +180,70 @@ Resolve-SLPLogItem -LogFileLine "1536154946.720 126553 192.168.0.107 TCP_TUNNEL/
 This call will return an object containing only the target URL.
 #>
 function Resolve-SLPLogItem {
-    [CmdletBinding()]
+    [CmdletBinding(DefaultParameterSetName="BySelectedProperties")]
     param (
         # This parameter contains a line that needs to be parsed
         [Parameter(Mandatory,ValueFromPipeline)]
         [String]$LogFileLine,
 
-        # This parameter contains the needed information. If not set, cmdlet will return all properties
-        [Parameter(Mandatory=$false)]
-        [ValidateSet("TargetUrl","SourceIp")]
-        [String[]]$Property
+        # This parameter contains the needed properties
+        [Parameter(Mandatory,ParameterSetName="BySelectedProperties")]
+        [PropertyList[]]$Property,
+
+        # This parameter indicates taht all properties shall be returned
+        [Parameter(Mandatory=$false,ParameterSetName="ByAllProperties")]
+        [switch]$AllProperties
     )
 
     process {
-        $returnObj = 1 | Select-Object -Property $Property
-        foreach ($prop in $Property) {
+        if ($AllProperties) {
+            $propertyList = [PropertyList].GetEnumNames()
+        }
+        else {
+            $propertyList = [String[]]$Property
+        }
+
+        $returnObj = 1 | Select-Object -Property $propertyList
+
+        foreach ($prop in $propertyList) {
             switch ($prop) {
                 "TargetUrl" {
                     $returnObj.TargetUrl = Resolve-SLPTargetUrl -Line $LogFileLine
                 }
-                "SourceIp" {
-                    $returnObj.SourceIp = Resolve-SLPSourceIp -Line $LogFileLine
+                "ClientAddress" {
+                    $returnObj.ClientAddress = Resolve-SLPClientAddress -Line $LogFileLine
                 }
-                # Other properties not yet implemented
+                "DateTime" {
+                    $returnObj.DateTime = Resolve-SLPDateTime -Line $LogFileLine
+                }
+                "Duration" {
+                    $returnObj.Duration = Resolve-SLPDuration -Line $LogFileLine
+                }
+                "ReturnCode" {
+                    $returnObj.ReturnCode = Resolve-SLPReturnCode -Line $LogFileLine
+                }
+                "SizeBytes" {
+                    $returnObj.SizeBytes = Resolve-SLPSizeBytes -Line $LogFileLine
+                }
+                "RequestMode" {
+                    $returnObj.RequestMode = Resolve-SLPRequestMode -Line $LogFileLine
+                }
+                "User" {
+                    $returnObj.User = Resolve-SLPUser -Line $LogFileLine
+                }
+                "HierarchyCode" {
+                    $returnObj.User = Resolve-SLPHierarchyCode -Line $LogFileLine
+                }
+                "Type" {
+                    $returnObj.Type = Resolve-SLPType -Line $LogFileLine
+                }
             }
         }
         return $returnObj
     }
 }
+
+
 #endregion
 
 # Export only the functions using PowerShell standard verb-noun naming.

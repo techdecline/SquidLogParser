@@ -29,23 +29,9 @@ function Resolve-SLPTargetUrl {
     param (
         [String]$Line
     )
+    $str = ($Line -split "\s+")[6]
 
-    # Define Regular Expressions for internet ressources
-    [regex]$regexHttp = "http.*"
-    [regex]$regexPort = " .*:[0-9]{2,5}"
-
-    $match = ($regexHttp.Matches($line)).Value
-    $url = ($match -split " ")[0]
-    if (-not $url) {
-        $match = ($regexPort.Matches($line)).Value
-        $url = ($match -split " ")[-1]
-    }
-    if ($url) {
-        return $url
-    }
-    else {
-        return $null
-    }
+    return $str
 }
 
 function Resolve-SLPClientAddress {
